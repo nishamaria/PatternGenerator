@@ -11,7 +11,7 @@ namespace PatternGen
 		public const string RedElementPath = "//red";
 		public const string GreenElementPath = "//green";
 		public const string BlueElementPath = "//blue";
-		public const int ApiContiniousCallCount = 10;
+		public const int ApiContiniousCallCount = 4;
 
 		public Constants ()
 		{
