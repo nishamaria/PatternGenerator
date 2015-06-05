@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="hello">Hello World, Click Me!</string>
-	<string name="app_name">PatternGen</string>
+    <color name="transparent">#00000000</color>
+    <color name="red">#ffff0000</color>
+    <color name="blue">#57a7d2</color>
 </resources>

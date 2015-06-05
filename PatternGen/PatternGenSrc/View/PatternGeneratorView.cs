@@ -1,4 +1,6 @@
 using System.Drawing;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace PatternGen
 {
@@ -8,11 +10,7 @@ namespace PatternGen
 	using Android.Util;
 	using Android.Views;
 
-	/// <summary>
-	///   This class will show how to respond to touch events using a custom subclass
-	///   of View.
-	/// </summary>
-	public class GestureRecognizerView : View
+	public class PatternGeneratorView : View
 	{
 		private static readonly int InvalidPointerId = -1;
 		private Drawable _icon;
@@ -21,17 +19,11 @@ namespace PatternGen
 		private float _lastTouchY;
 		private float _posX;
 		private float _posY;
-		private float _scaleFactor = 1.0f;
 		private Paint _mPaint;
 		private bool _mTouched;
 		private Context _mContext;
-		private bool _mDrawSquare;
-		public RGB HexColor{
-			get;
-			set;
-		}
 
-		public GestureRecognizerView (Context context)
+		public PatternGeneratorView (Context context)
 			: base (context, null, 0)
 		{
 			_mContext = context;
@@ -40,7 +32,7 @@ namespace PatternGen
 			_mPaint = new Paint ();
 		}
 
-		public GestureRecognizerView (Context context, IAttributeSet attrs) :
+		public PatternGeneratorView (Context context, IAttributeSet attrs) :
 			base (context, attrs)
 		{
 			_mContext = context;
@@ -59,11 +51,13 @@ namespace PatternGen
 			switch (action) {
 			case MotionEventActions.Down:
 				_mTouched = true;
-				_mDrawSquare = Util.drawSquare ();
 				_lastTouchX = ev.GetX ();
 				_lastTouchY = ev.GetY ();
 				_activePointerId = ev.GetPointerId (0);
 
+				//Keep populating the online list
+				Task sizeTask = Util.GetPatternAsync ();
+			
 				break;
 
 			case MotionEventActions.Move:
@@ -77,9 +71,9 @@ namespace PatternGen
 				_posY += deltaY;
 				Invalidate ();
 
-
 				_lastTouchX = x;
 				_lastTouchY = y;
+
 				break;
 
 			case MotionEventActions.Up:
@@ -111,33 +105,42 @@ namespace PatternGen
 		protected override void OnDraw (Canvas canvas)
 		{
 			base.OnDraw (canvas);
+
+			//TODO: Handle mutiple calls of onDraw
 			canvas.Save ();
 			canvas.Translate (_posX, _posY);
-			canvas.Scale (_scaleFactor, _scaleFactor);
 			//_icon.Draw (canvas);
-			_mPaint.SetARGB (0, HexColor.Red.Value, HexColor.Green.Value, HexColor.Blue.Value);
-			//PattenFetcher fetcher = new PattenFetcher();
-			//_mPaint.Color = fetcher.RgbColor;
+			_mPaint.SetARGB (31, 23, 15, 7);
 			if (_mTouched) {
+				
+				//TODO: Generate pattern from imageurl
+
+				// This just get the color based on online and offline mode
 				if (Util.isConnectedToNetwork (_mContext)) {
-					//_mPaint.SetARGB (100, 30, 20, 0);
-					canvas.DrawCircle (_lastTouchX, _lastTouchY, 50, _mPaint);
-				} else {
-					if (Util.drawSquare ()) {
-						_mPaint.SetARGB (200, 100, 200, 0);
-						canvas.DrawCircle (_lastTouchX, _lastTouchY, 50, _mPaint);
-						//_icon.SetBounds ((int)_lastTouchX, (int)_lastTouchY, _icon.IntrinsicWidth, _icon.IntrinsicHeight);
-						//_icon.Draw (canvas);
-					} else {
-						_mPaint.SetARGB (95, 28, 53, 0);
-						canvas.DrawCircle (_lastTouchX, _lastTouchY, 50, _mPaint);
+					if (Util.getOnlineColorList () != null && Util.getOnlineColorList ().Count > 0) {
+						Color color = Util.getOnlineColorList () [0];
+						_mPaint.Color = color;
+						Util.getOnlineColorList ().Remove (color);
 					}
+					drawShape (_mPaint, canvas);
+				} else {
+					_mPaint.Color = Util.getRandomColor (Util.getOfflineColorList ());
+					drawShape (_mPaint, canvas);
 				}
 			}
 			canvas.Restore ();
 		}
 
+		private void drawShape (Paint paint, Canvas canvas)
+		{
+			if (Util.drawSquare ()) {
+				canvas.DrawRect (_lastTouchX, _lastTouchY, _lastTouchX + 70, _lastTouchY + 70, paint);
+			} else {
+				canvas.DrawCircle (_lastTouchX, _lastTouchY, 50, _mPaint);
 
+			}
+		}
 			
 	}
+
 }

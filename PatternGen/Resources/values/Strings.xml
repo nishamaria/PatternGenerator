@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="click">Please click the view below</string>
+	<string name="app_name">PatternGen</string>
+</resources>
